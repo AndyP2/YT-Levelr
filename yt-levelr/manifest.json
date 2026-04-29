@@ -1,0 +1,25 @@
+{
+  "manifest_version": 2,
+  "name": "YT Levelr",
+  "version": "1.0.0",
+  "description": "Automatic loudness levelling for YouTube — useful for podcasts",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["*://www.youtube.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "browser_action": {
+    "default_popup": "popup.html",
+    "default_title": "YT Levelr"
+  },
+  "icons": {
+    "48": "icons/icon48.png",
+    "96": "icons/icon96.png"
+  }
+}

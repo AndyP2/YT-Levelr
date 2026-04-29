@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>YT Levelr</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f0f0f;
+      --surface: #1a1a1a;
+      --border: #2a2a2a;
+      --accent: #c8f060;
+      --accent-dim: #8aaa30;
+      --text: #e8e8e8;
+      --text-muted: #666;
+      --danger: #ff5a5a;
+      --radius: 6px;
+    }
+
+    body {
+      width: 260px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      padding: 0;
+      user-select: none;
+    }
+
+    header {
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .wordmark {
+      font-family: 'DM Mono', monospace;
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: -0.02em;
+      color: var(--accent);
+    }
+
+    .wordmark span {
+      color: var(--text-muted);
+    }
+
+    .toggle-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .toggle-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: 'DM Mono', monospace;
+    }
+
+    .toggle {
+      position: relative;
+      width: 34px;
+      height: 18px;
+    }
+
+    .toggle input { opacity: 0; width: 0; height: 0; }
+
+    .toggle-track {
+      position: absolute;
+      inset: 0;
+      background: var(--border);
+      border-radius: 9px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .toggle-track::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 14px;
+      height: 14px;
+      background: var(--text-muted);
+      border-radius: 50%;
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .toggle input:checked + .toggle-track {
+      background: var(--accent-dim);
+    }
+
+    .toggle input:checked + .toggle-track::after {
+      transform: translateX(16px);
+      background: var(--accent);
+    }
+
+    .body {
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Gain meter */
+    .meter-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+    }
+
+    .meter-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+
+    .meter-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .gain-value {
+      font-family: 'DM Mono', monospace;
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .gain-value .unit {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-left: 2px;
+    }
+
+    .meter-bar-bg {
+      height: 5px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .meter-bar-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width 0.4s ease;
+      width: 50%;
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 7px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .status-dot.measuring { background: #f0c040; animation: pulse 1.2s infinite; }
+    .status-dot.locked { background: var(--accent); }
+    .status-dot.off { background: var(--text-muted); }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .status-text {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    /* Target slider */
+    .control-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .control-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .control-name {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: 'DM Mono', monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .control-val {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text);
+    }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type=range]::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: none;
+      cursor: pointer;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+    }
+
+    .hint {
+      font-size: 10px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* Remeasure button */
+    .btn {
+      width: 100%;
+      padding: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      transition: border-color 0.15s, color 0.15s;
+      text-align: center;
+    }
+
+    .btn:hover {
+      border-color: var(--accent-dim);
+      color: var(--accent);
+    }
+
+    .btn:active {
+      background: #222;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 0 -16px;
+    }
+
+    footer {
+      padding: 8px 16px;
+      font-size: 10px;
+      color: var(--text-muted);
+      font-family: 'DM Mono', monospace;
+      border-top: 1px solid var(--border);
+    }
+
+    body.disabled .meter-bar-fill {
+      background: var(--text-muted);
+    }
+
+    body.disabled .gain-value {
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wordmark">YT<span>/</span>Levelr</div>
+    <div class="toggle-wrap">
+      <span class="toggle-label" id="toggle-label">ON</span>
+      <label class="toggle">
+        <input type="checkbox" id="enabled-toggle" checked>
+        <div class="toggle-track"></div>
+      </label>
+    </div>
+  </header>
+
+  <div class="body">
+
+    <div class="meter-section">
+      <div class="meter-row">
+        <span class="meter-label">Applied gain</span>
+        <span class="gain-value" id="gain-display">1.00<span class="unit">x</span></span>
+      </div>
+      <div class="meter-bar-bg">
+        <div class="meter-bar-fill" id="gain-bar"></div>
+      </div>
+      <div class="status-row">
+        <div class="status-dot off" id="status-dot"></div>
+        <span class="status-text" id="status-text">waiting for video</span>
+      </div>
+    </div>
+
+    <div class="control-row">
+      <div class="control-header">
+        <span class="control-name">Target level</span>
+        <span class="control-val" id="target-val">–22 dBFS</span>
+      </div>
+      <input type="range" id="target-slider" min="-30" max="-12" step="1" value="-22">
+      <span class="hint">Lower = quieter target. –22 dBFS suits most podcast listening.</span>
+    </div>
+
+    <button class="btn" id="remeasure-btn">re-measure current video</button>
+
+  </div>
+
+  <footer>youtube.com only &nbsp;·&nbsp; no data collected</footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>
