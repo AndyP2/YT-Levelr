@@ -1,5 +1,5 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "YT Levelr",
   "version": "1.0.0",
   "description": "Automatic loudness levelling for YouTube — useful for podcasts",
@@ -14,7 +14,7 @@
       "run_at": "document_idle"
     }
   ],
-  "browser_action": {
+  "action": {
     "default_popup": "popup.html",
     "default_title": "YT Levelr"
   },
