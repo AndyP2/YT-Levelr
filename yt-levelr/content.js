@@ -78,7 +78,8 @@ browser.runtime.onMessage.addListener((msg) => {
       enabled,
       gain: currentGain,
       locked,
-      targetRMS: state.targetRMS
+      targetRMS: state.targetRMS,
+      elapsed: videoStartTime ? Date.now() - videoStartTime : 0
     });
   }
 });

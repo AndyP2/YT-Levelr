@@ -189,6 +189,56 @@
       color: var(--text-muted);
     }
 
+    .confidence-row {
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .confidence-label-row {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .confidence-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .confidence-pct {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .confidence-bar-bg {
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .confidence-bar-fill {
+      height: 100%;
+      background: #f0c040;
+      border-radius: 2px;
+      transition: width 0.6s ease, background 0.4s ease;
+      width: 0%;
+    }
+
+    .confidence-bar-fill.locked {
+      background: var(--accent);
+      width: 100% !important;
+    }
+
+    body.disabled .confidence-bar-fill {
+      background: var(--text-muted);
+    }
+
     /* Target slider */
     .control-row {
       display: flex;
@@ -324,6 +374,15 @@
       <div class="status-row">
         <div class="status-dot off" id="status-dot"></div>
         <span class="status-text" id="status-text">waiting for video</span>
+      </div>
+      <div class="confidence-row">
+        <div class="confidence-label-row">
+          <span class="confidence-label">confidence</span>
+          <span class="confidence-pct" id="confidence-pct">—</span>
+        </div>
+        <div class="confidence-bar-bg">
+          <div class="confidence-bar-fill" id="confidence-bar"></div>
+        </div>
       </div>
     </div>
 

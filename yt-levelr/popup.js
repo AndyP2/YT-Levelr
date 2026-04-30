@@ -23,9 +23,20 @@ const gainDisplay = document.getElementById("gain-display");
 const gainBar = document.getElementById("gain-bar");
 const statusDot = document.getElementById("status-dot");
 const statusText = document.getElementById("status-text");
+const confidenceBar = document.getElementById("confidence-bar");
+const confidencePct = document.getElementById("confidence-pct");
 const targetSlider = document.getElementById("target-slider");
 const targetVal = document.getElementById("target-val");
 const remeasureBtn = document.getElementById("remeasure-btn");
+
+// Confidence ramps from 0 at 5s to 100 at 30s (matching FAST_TC and LOCK_TC)
+const FAST_TC = 5000;
+const LOCK_TC = 30000;
+
+function elapsedToConfidence(elapsed) {
+  if (elapsed < FAST_TC) return 0;
+  return Math.min(100, ((elapsed - FAST_TC) / (LOCK_TC - FAST_TC)) * 100);
+}
 
 // Load saved settings
 browser.storage.local.get(["enabled", "targetDB"]).then(result => {
@@ -54,16 +65,28 @@ function pollState() {
       if (!state.enabled) {
         statusDot.className = "status-dot off";
         statusText.textContent = "disabled";
+        confidenceBar.className = "confidence-bar-fill";
+        confidenceBar.style.width = "0%";
+        confidencePct.textContent = "—";
       } else if (state.locked) {
         statusDot.className = "status-dot locked";
         statusText.textContent = `locked · ${gainDb >= 0 ? "+" : ""}${gainDb.toFixed(1)} dB`;
+        confidenceBar.className = "confidence-bar-fill locked";
+        confidencePct.textContent = "locked";
       } else {
+        const pct = elapsedToConfidence(state.elapsed);
         statusDot.className = "status-dot measuring";
-        statusText.textContent = "measuring…";
+        statusText.textContent = pct === 0 ? "sampling…" : "measuring…";
+        confidenceBar.className = "confidence-bar-fill";
+        confidenceBar.style.width = pct + "%";
+        confidencePct.textContent = pct === 0 ? "—" : Math.round(pct) + "%";
       }
     }).catch(() => {
       statusDot.className = "status-dot off";
       statusText.textContent = "not on a YouTube video";
+      confidenceBar.className = "confidence-bar-fill";
+      confidenceBar.style.width = "0%";
+      confidencePct.textContent = "—";
     });
   });
 }
@@ -99,5 +122,8 @@ remeasureBtn.addEventListener("click", () => {
     if (tabs[0]) browser.tabs.sendMessage(tabs[0].id, { type: "remeasure" });
   });
   statusDot.className = "status-dot measuring";
-  statusText.textContent = "re-measuring…";
+  statusText.textContent = "sampling…";
+  confidenceBar.className = "confidence-bar-fill";
+  confidenceBar.style.width = "0%";
+  confidencePct.textContent = "—";
 });
