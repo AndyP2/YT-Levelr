@@ -28,7 +28,7 @@ let measurementSamples = [];
 let videoStartTime = null;
 let locked = false;
 let currentGain = 1.0;
-let animFrameId = null;
+let intervalId = null;
 let lastDriftCorrection = null;
 
 let enabled = true;
@@ -136,7 +136,6 @@ function applyGain(g) {
 }
 
 function measurementLoop() {
-  animFrameId = requestAnimationFrame(measurementLoop);
 
   if (!analyserNode || !enabled) return;
 
@@ -212,8 +211,8 @@ function onNewVideo() {
       videoEl = el;
       setupAudioGraph(videoEl);
     }
-    if (animFrameId) cancelAnimationFrame(animFrameId);
-    measurementLoop();
+    if (intervalId) clearInterval(intervalId);
+    intervalId = setInterval(measurementLoop, 300);
   });
 }
 
