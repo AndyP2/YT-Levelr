@@ -2,21 +2,41 @@
  * YT Levelr - content.js
  *
  * Strategy:
- * - On each new video, take a provisional gain reading after 5s
- * - Continue refining with a slow time constant for up to 30s, then effectively lock
- * - After locking, apply a very slow drift correction (minutes-long time constant)
- *   to handle outliers like loud intros followed by quiet speech
- * - Samples below a noise floor threshold are ignored to avoid silence skewing measurement
+ * - Gain limits widen over time as confidence in the measurement grows
+ * - Cuts are permitted more aggressively than boosts at all stages (asymmetric)
+ *   because a sudden loud blast is worse than staying quiet for a few seconds
+ * - Gain transitions are faster for cuts than for boosts (asymmetric attack/release)
+ * - After 30s the gain locks; a slow drift correction every 3 minutes handles
+ *   any remaining long-term level shift
+ * - Samples below the noise floor are ignored to avoid silence skewing the median
+ *
+ * Confidence schedule (elapsed => max cut / max boost):
+ *   0-5s:   accumulating samples, no adjustment yet
+ *   5s:     -6dB / +3dB
+ *   15s:    -12dB / +6dB
+ *   30s+:   -20dB / +15dB (full range, locked)
  */
 
-const TARGET_RMS = 0.08;        // Target RMS amplitude (~-22 dBFS, comfortable speech level)
-const NOISE_FLOOR = 0.005;      // Ignore samples quieter than this (silence / room noise)
-const MAX_GAIN = 6.0;           // Never boost more than ~15dB to avoid amplifying noise
-const MIN_GAIN = 0.1;           // Never cut more than ~20dB
+const TARGET_RMS = 0.08;        // Target RMS (~-22 dBFS, comfortable speech level)
+const NOISE_FLOOR = 0.005;      // Ignore samples quieter than this
+const MAX_GAIN = 5.62;          // +15dB absolute ceiling
+const MIN_GAIN = 0.1;           // -20dB absolute floor
 
-const FAST_TC = 5000;           // ms - provisional measurement window
-const LOCK_TC = 30000;          // ms - refine and lock within this window
-const DRIFT_TC = 3 * 60 * 1000; // ms - very slow drift correction after lock
+const FAST_TC  = 5000;          // ms - first provisional application
+const LOCK_TC  = 30000;         // ms - full confidence, lock gain
+const DRIFT_TC = 3 * 60 * 1000; // ms - slow drift correction period after lock
+
+// At each elapsed ms threshold, permitted range widens
+const CONFIDENCE_SCHEDULE = [
+  { at: 5000,  maxCutDB: 6,  maxBoostDB: 3  },
+  { at: 15000, maxCutDB: 12, maxBoostDB: 6  },
+  { at: 30000, maxCutDB: 20, maxBoostDB: 15 },
+];
+
+// GainNode transition time constants (seconds)
+// Cuts apply faster than boosts to protect against sudden loud audio
+const TC_CUT   = 0.15;
+const TC_BOOST = 1.2;
 
 let audioCtx = null;
 let sourceNode = null;
@@ -124,19 +144,42 @@ function resetMeasurement() {
   log("Measurement reset");
 }
 
-function applyGain(g) {
-  currentGain = Math.max(MIN_GAIN, Math.min(MAX_GAIN, g));
-  if (gainNode && enabled) {
-    gainNode.gain.setTargetAtTime(currentGain, audioCtx.currentTime, 0.3);
+// Returns the permitted [minGain, maxGain] for the current elapsed time
+function gainLimitsForElapsed(elapsed) {
+  let maxCutDB = 0;
+  let maxBoostDB = 0;
+  for (const step of CONFIDENCE_SCHEDULE) {
+    if (elapsed >= step.at) {
+      maxCutDB   = step.maxCutDB;
+      maxBoostDB = step.maxBoostDB;
+    }
   }
-  // Notify popup if open
+  return {
+    min: Math.pow(10, -maxCutDB  / 20),  // e.g. -6dB -> 0.501
+    max: Math.pow(10,  maxBoostDB / 20),  // e.g. +3dB -> 1.413
+  };
+}
+
+function applyGain(g, elapsed) {
+  const limits = gainLimitsForElapsed(elapsed !== undefined ? elapsed : LOCK_TC);
+  const clamped = Math.max(
+    Math.max(MIN_GAIN, limits.min),
+    Math.min(Math.min(MAX_GAIN, limits.max), g)
+  );
+
+  const isCut = clamped < currentGain;
+  const tc = isCut ? TC_CUT : TC_BOOST;
+
+  currentGain = clamped;
+  if (gainNode && enabled) {
+    gainNode.gain.setTargetAtTime(currentGain, audioCtx.currentTime, tc);
+  }
   try {
     browser.runtime.sendMessage({ type: "gainUpdate", gain: currentGain, locked });
   } catch(e) {}
 }
 
 function measurementLoop() {
-
   if (!analyserNode || !enabled) return;
 
   const rms = getRMS();
@@ -148,37 +191,36 @@ function measurementLoop() {
   if (!locked) {
     measurementSamples.push(rms);
 
-    // Provisional correction after FAST_TC
+    // From 5s onward: apply gain on every interval tick, within the
+    // confidence-limited range for the current elapsed time.
+    // As elapsed grows the limits widen, so corrections become bolder
+    // automatically without any extra logic.
     if (elapsed >= FAST_TC && measurementSamples.length > 10) {
       const medianRMS = median(measurementSamples);
       const targetGain = state.targetRMS / medianRMS;
-      applyGain(targetGain);
-      log(`Provisional gain: ${currentGain.toFixed(3)} (median RMS: ${medianRMS.toFixed(4)})`);
+      applyGain(targetGain, elapsed);
+      log(`Gain update at ${(elapsed/1000).toFixed(1)}s: ${currentGain.toFixed(3)}x (median RMS: ${medianRMS.toFixed(4)})`);
     }
 
-    // Lock after LOCK_TC
+    // Lock at 30s
     if (elapsed >= LOCK_TC) {
       locked = true;
       lastDriftCorrection = Date.now();
-      const medianRMS = median(measurementSamples);
-      const targetGain = state.targetRMS / medianRMS;
-      applyGain(targetGain);
-      log(`Locked gain: ${currentGain.toFixed(3)}`);
+      log(`Locked at gain: ${currentGain.toFixed(3)}x`);
       measurementSamples = [];
     }
   } else {
     // Slow drift correction after lock
     const timeSinceDrift = Date.now() - lastDriftCorrection;
     if (timeSinceDrift >= DRIFT_TC) {
-      // Collect a fresh short sample window for drift check
       measurementSamples.push(rms);
       if (measurementSamples.length >= 60) {
         const medianRMS = median(measurementSamples);
         const targetGain = state.targetRMS / medianRMS;
-        // Blend slowly toward new target (10% correction)
+        // Blend 10% toward new target, with full gain range permitted
         const correctedGain = currentGain + (targetGain - currentGain) * 0.1;
         applyGain(correctedGain);
-        log(`Drift correction: ${currentGain.toFixed(3)}`);
+        log(`Drift correction: ${currentGain.toFixed(3)}x`);
         measurementSamples = [];
         lastDriftCorrection = Date.now();
       }
