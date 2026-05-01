@@ -18,8 +18,10 @@ jobs:
       - name: Zip yt-levelr files
         shell: powershell
         run: |
+          # create destination directory first
+          New-Item -ItemType Directory -Path build -Force | Out-Null
+          # zip up files without root directory
           Compress-Archive -Path yt-levelr/* -DestinationPath build/yt-levelr.zip -Force
-          # Ensures build/ dir exists implicitly via -Force
 
       - name: Create release and upload zip
         uses: softprops/action-gh-release@v2
