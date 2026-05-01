@@ -1,0 +1,28 @@
+name: Create Release with Zip
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Matches semver tags like v1.0.0; adjust pattern as needed
+
+permissions:
+  contents: write  # Required for release creation/upload
+
+jobs:
+  release:
+    runs-on: windows-latest  # Matches your PowerShell/Compress-Archive environment
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Zip yt-levelr files
+        shell: powershell
+        run: |
+          Compress-Archive -Path yt-levelr/* -DestinationPath build/yt-levelr.zip -Force
+          # Ensures build/ dir exists implicitly via -Force
+
+      - name: Create release and upload zip
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/yt-levelr.zip
+          generate_release_notes: true  # Auto-generates notes from commits
