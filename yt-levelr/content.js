@@ -44,7 +44,8 @@ let analyserNode = null;
 let compressorNode = null;
 
 let measurementSamples = [];
-let videoStartTime = null;
+let playingMs = 0;        // cumulative ms of actual playback, used for confidence
+let lastTickTime = null;  // wall clock time of last tick, for accumulating playingMs
 let locked = false;
 let currentGain = 1.0;
 let intervalId = null;
@@ -78,7 +79,7 @@ browser.runtime.onMessage.addListener((msg) => {
       gain: currentGain,
       locked,
       targetRMS: state.targetRMS,
-      elapsed: videoStartTime ? Date.now() - videoStartTime : 0
+      elapsed: playingMs
     });
   }
 });
@@ -138,7 +139,8 @@ function getRMS() {
 
 function resetMeasurement() {
   measurementSamples = [];
-  videoStartTime = Date.now();
+  playingMs = 0;
+  lastTickTime = null;
   locked = false;
   lastDriftCorrection = null;
   log("Measurement reset");
@@ -182,8 +184,21 @@ function applyGain(g, elapsed) {
 function measurementLoop() {
   if (!analyserNode || !enabled) return;
 
+  const now = Date.now();
+
+  // Accumulate playing time only while the video is actually running
+  if (videoEl && !videoEl.paused && !videoEl.ended) {
+    if (lastTickTime !== null) {
+      playingMs += now - lastTickTime;
+    }
+    lastTickTime = now;
+  } else {
+    // Paused or ended -- stop the clock, discard any stale buffer reads
+    lastTickTime = null;
+    return;
+  }
+
   const rms = getRMS();
-  const elapsed = Date.now() - videoStartTime;
 
   // Skip silence
   if (rms < NOISE_FLOOR) return;
@@ -197,12 +212,12 @@ function measurementLoop() {
     if (measurementSamples.length > 3) {
       const medianRMS = median(measurementSamples);
       const targetGain = state.targetRMS / medianRMS;
-      applyGain(targetGain, elapsed);
-      log(`Gain update at ${(elapsed/1000).toFixed(1)}s: ${currentGain.toFixed(3)}x (median RMS: ${medianRMS.toFixed(4)})`);
+      applyGain(targetGain, playingMs);
+      log(`Gain update at ${(playingMs/1000).toFixed(1)}s playing: ${currentGain.toFixed(3)}x (median RMS: ${medianRMS.toFixed(4)})`);
     }
 
-    // Lock at 30s
-    if (elapsed >= LOCK_TC) {
+    // Lock at 30s of actual playback
+    if (playingMs >= LOCK_TC) {
       locked = true;
       lastDriftCorrection = Date.now();
       log(`Locked at gain: ${currentGain.toFixed(3)}x`);
