@@ -17,7 +17,6 @@
         "isDefault": true
       },
       "presentation": {
-        //"reveal": "silent",
         "showReuseMessage": false
       }
     },
@@ -38,7 +37,6 @@
         "isDefault": false
       },
       "presentation": {
-        //"reveal": "silent",
         "showReuseMessage": false
       }
     },
