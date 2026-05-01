@@ -1,0 +1,12 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build:zip",
+      "group": "build",
+      "type": "shell",
+      "command": "New-Item -ItemType Directory -Path \"build\" -Force; Compress-Archive -Path \"yt-levelr\\*\" -DestinationPath \"build\\yt-levelr.zip\" -Force"
+    },
+  ]
+}
+
