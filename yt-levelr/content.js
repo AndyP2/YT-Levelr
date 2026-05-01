@@ -11,9 +11,8 @@
  * - Samples below the noise floor are ignored to avoid silence skewing the median
  *
  * Confidence schedule (elapsed => max cut / max boost):
- *   0-5s:   accumulating samples, no adjustment yet
- *   5s:     -6dB / +3dB
- *   15s:    -12dB / +6dB
+ *   0s:     -6dB / +3dB  (immediate, low confidence)
+ *   10s:    -12dB / +6dB
  *   30s+:   -20dB / +15dB (full range, locked)
  */
 
@@ -22,14 +21,14 @@ const NOISE_FLOOR = 0.005;      // Ignore samples quieter than this
 const MAX_GAIN = 5.62;          // +15dB absolute ceiling
 const MIN_GAIN = 0.1;           // -20dB absolute floor
 
-const FAST_TC  = 5000;          // ms - first provisional application
 const LOCK_TC  = 30000;         // ms - full confidence, lock gain
 const DRIFT_TC = 3 * 60 * 1000; // ms - slow drift correction period after lock
 
-// At each elapsed ms threshold, permitted range widens
+// At each elapsed ms threshold, permitted range widens.
+// First entry applies from t=0, so there is no dead period.
 const CONFIDENCE_SCHEDULE = [
-  { at: 5000,  maxCutDB: 6,  maxBoostDB: 3  },
-  { at: 15000, maxCutDB: 12, maxBoostDB: 6  },
+  { at: 0,     maxCutDB: 6,  maxBoostDB: 3  },
+  { at: 10000, maxCutDB: 12, maxBoostDB: 6  },
   { at: 30000, maxCutDB: 20, maxBoostDB: 15 },
 ];
 
@@ -192,11 +191,10 @@ function measurementLoop() {
   if (!locked) {
     measurementSamples.push(rms);
 
-    // From 5s onward: apply gain on every interval tick, within the
-    // confidence-limited range for the current elapsed time.
-    // As elapsed grows the limits widen, so corrections become bolder
-    // automatically without any extra logic.
-    if (elapsed >= FAST_TC && measurementSamples.length > 10) {
+    // Apply gain on every tick from the first sample onward.
+    // The confidence schedule limits how far we can move at each stage,
+    // so early corrections are necessarily modest.
+    if (measurementSamples.length > 3) {
       const medianRMS = median(measurementSamples);
       const targetGain = state.targetRMS / medianRMS;
       applyGain(targetGain, elapsed);

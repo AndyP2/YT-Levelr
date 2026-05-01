@@ -29,13 +29,11 @@ const targetSlider = document.getElementById("target-slider");
 const targetVal = document.getElementById("target-val");
 const remeasureBtn = document.getElementById("remeasure-btn");
 
-// Confidence ramps from 0 at 5s to 100 at 30s (matching FAST_TC and LOCK_TC)
-const FAST_TC = 5000;
+// Confidence ramps from 0 at t=0 to 100 at LOCK_TC (30s)
 const LOCK_TC = 30000;
 
 function elapsedToConfidence(elapsed) {
-  if (elapsed < FAST_TC) return 0;
-  return Math.min(100, ((elapsed - FAST_TC) / (LOCK_TC - FAST_TC)) * 100);
+  return Math.min(100, (elapsed / LOCK_TC) * 100);
 }
 
 // Load saved settings
@@ -76,10 +74,10 @@ function pollState() {
       } else {
         const pct = elapsedToConfidence(state.elapsed);
         statusDot.className = "status-dot measuring";
-        statusText.textContent = pct === 0 ? "sampling…" : "measuring…";
+        statusText.textContent = "measuring…";
         confidenceBar.className = "confidence-bar-fill";
         confidenceBar.style.width = pct + "%";
-        confidencePct.textContent = pct === 0 ? "—" : Math.round(pct) + "%";
+        confidencePct.textContent = Math.round(pct) + "%";
       }
     }).catch(() => {
       statusDot.className = "status-dot off";
