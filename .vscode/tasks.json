@@ -2,11 +2,45 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "build:zip",
-      "group": "build",
+      "label": "Build extension zip",
       "type": "shell",
-      "command": "New-Item -ItemType Directory -Path \"build\" -Force; Compress-Archive -Path \"yt-levelr\\*\" -DestinationPath \"build\\yt-levelr.zip\" -Force"
+      "command": "Compress-Archive",
+      "args": [
+        "-Path",
+        "yt-levelr/*",
+        "-DestinationPath",
+        "build/yt-levelr.zip",
+        "-Force"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        //"reveal": "silent",
+        "showReuseMessage": false
+      }
+    },
+    {
+      "label": "UnBuild extension zip",
+      "type": "shell",
+      "command": "Expand-Archive",
+      "args": [
+        "-Path",
+        "build/yt-levelr.zip",
+        "-DestinationPath",
+        "yt-levelr",
+        "-Force",
+        "-Verbose"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "presentation": {
+        //"reveal": "silent",
+        "showReuseMessage": false
+      }
     },
   ]
 }
-
