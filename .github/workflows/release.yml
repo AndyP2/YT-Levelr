@@ -10,17 +10,17 @@ permissions:
 
 jobs:
   release:
-    runs-on: windows-latest  # Matches your PowerShell/Compress-Archive environment
+    runs-on: windows-latest  # we're using PowerShell/Compress-Archive
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Zip yt-levelr files
+        # create destination directory first
+        # then zip up files without root directory
         shell: powershell
         run: |
-          # create destination directory first
           New-Item -ItemType Directory -Path build -Force | Out-Null
-          # zip up files without root directory
           Compress-Archive -Path yt-levelr/* -DestinationPath build/yt-levelr.zip -Force
 
       - name: Create release and upload zip
