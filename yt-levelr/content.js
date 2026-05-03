@@ -49,11 +49,11 @@ const waveformHistory = new Array(WAVEFORM_SIZE).fill(null);
 let waveformHead = 0;
 
 let measurementSamples = [];
-let playingMs = 0;
-let lastTickTime = null;
+let playingMs = 0;        // cumulative ms of actual playback (excludes paused time)
+let lastTickTime = null;  // wall clock at last tick, for incrementing playingMs
 let locked = false;
 let currentGain = 1.0;
-let intervalId = null;
+let intervalId = null;    // setInterval handle for measurementLoop
 let lastDriftCorrection = null;
 
 let enabled = true;
@@ -113,6 +113,10 @@ function setupAudioGraph(videoEl) {
   }
 
   audioCtx = new AudioContext();
+
+  // AudioContext may start suspended if created before a user gesture.
+  // resume() is a no-op if already running, so safe to call unconditionally.
+  audioCtx.resume().catch(() => {});
 
   sourceNode = audioCtx.createMediaElementSource(videoEl);
 
@@ -199,6 +203,12 @@ function applyGain(g, elapsed) {
 
 function measurementLoop() {
   if (!analyserNode || !enabled) return;
+
+  // Resume AudioContext if it was suspended (e.g. browser autoplay policy)
+  if (audioCtx && audioCtx.state === "suspended") {
+    audioCtx.resume().catch(() => {});
+    return;
+  }
 
   const now = Date.now();
 
