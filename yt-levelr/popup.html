@@ -347,6 +347,40 @@
     body.disabled .gain-value {
       color: var(--text-muted);
     }
+
+    /* Waveform canvas */
+    .waveform-wrap {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .waveform-wrap canvas {
+      display: block;
+      width: 100%;
+      height: 88px;
+    }
+
+    .waveform-paused-label {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .waveform-wrap.paused .waveform-paused-label {
+      opacity: 1;
+    }
   </style>
 </head>
 <body>
@@ -384,6 +418,11 @@
           <div class="confidence-bar-fill" id="confidence-bar"></div>
         </div>
       </div>
+    </div>
+
+    <div class="waveform-wrap" id="waveform-wrap">
+      <canvas id="waveform-canvas" width="228" height="88"></canvas>
+      <span class="waveform-paused-label">paused</span>
     </div>
 
     <div class="control-row">

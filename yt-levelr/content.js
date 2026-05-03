@@ -43,9 +43,14 @@ let gainNode = null;
 let analyserNode = null;
 let compressorNode = null;
 
+// Ring buffer for waveform display -- last 100 samples (~30s at 300ms interval)
+const WAVEFORM_SIZE = 100;
+const waveformHistory = new Array(WAVEFORM_SIZE).fill(null);
+let waveformHead = 0;
+
 let measurementSamples = [];
-let playingMs = 0;        // cumulative ms of actual playback, used for confidence
-let lastTickTime = null;  // wall clock time of last tick, for accumulating playingMs
+let playingMs = 0;
+let lastTickTime = null;
 let locked = false;
 let currentGain = 1.0;
 let intervalId = null;
@@ -74,12 +79,21 @@ browser.runtime.onMessage.addListener((msg) => {
     resetMeasurement();
   }
   if (msg.type === "getState") {
+    // Unroll ring buffer into chronological order
+    const waveform = [];
+    for (let i = 0; i < WAVEFORM_SIZE; i++) {
+      waveform.push(waveformHistory[(waveformHead + i) % WAVEFORM_SIZE]);
+    }
+    const limits = gainLimitsForElapsed(locked ? LOCK_TC : playingMs);
     return Promise.resolve({
       enabled,
       gain: currentGain,
       locked,
       targetRMS: state.targetRMS,
-      elapsed: playingMs
+      elapsed: playingMs,
+      waveform,
+      gainLimits: limits,
+      paused: videoEl ? videoEl.paused : true
     });
   }
 });
@@ -143,6 +157,8 @@ function resetMeasurement() {
   lastTickTime = null;
   locked = false;
   lastDriftCorrection = null;
+  waveformHistory.fill(null);
+  waveformHead = 0;
   log("Measurement reset");
 }
 
@@ -193,12 +209,18 @@ function measurementLoop() {
     }
     lastTickTime = now;
   } else {
-    // Paused or ended -- stop the clock, discard any stale buffer reads
+    // Paused -- push a null sample so the waveform shows the gap, then stop
+    waveformHistory[waveformHead] = null;
+    waveformHead = (waveformHead + 1) % WAVEFORM_SIZE;
     lastTickTime = null;
     return;
   }
 
   const rms = getRMS();
+
+  // Always record to waveform history regardless of noise floor
+  waveformHistory[waveformHead] = rms;
+  waveformHead = (waveformHead + 1) % WAVEFORM_SIZE;
 
   // Skip silence
   if (rms < NOISE_FLOOR) return;
