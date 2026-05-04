@@ -64,7 +64,7 @@ browser.storage.local.get("enabled").then(result => {
 });
 
 // Listen for messages from popup
-browser.runtime.onMessage.addListener((msg) => {
+browser.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === "setEnabled") {
     enabled = msg.value;
     if (gainNode) {
@@ -85,7 +85,7 @@ browser.runtime.onMessage.addListener((msg) => {
       waveform.push(waveformHistory[(waveformHead + i) % WAVEFORM_SIZE]);
     }
     const limits = gainLimitsForElapsed(locked ? LOCK_TC : playingMs);
-    return Promise.resolve({
+    sendResponse({
       enabled,
       gain: currentGain,
       locked,
@@ -95,6 +95,7 @@ browser.runtime.onMessage.addListener((msg) => {
       gainLimits: limits,
       paused: videoEl ? videoEl.paused : true
     });
+    return true; // keeps the message channel open for sendResponse
   }
 });
 
