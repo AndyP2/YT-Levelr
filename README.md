@@ -2,6 +2,8 @@
 
 A firefox plugin to equalise the volume of youtube videos, especially podcasts, where every producer has their own idea of what the correct levels should be.
 
+![Screenshot](screenshot.png)
+
 ## Strategy
 
 - Gain limits widen over time as confidence in the measurement grows
