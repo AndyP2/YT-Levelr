@@ -221,7 +221,12 @@ function pollState() {
       if (!state) return;
 
       const gainDb = gainToDb(state.gain);
-      gainDisplay.innerHTML = `${state.gain.toFixed(2)}<span class="unit">x</span>`;
+      gainDisplay.textContent = state.gain.toFixed(2);
+      // Restore the unit span safely
+      const unitSpan = document.createElement("span");
+      unitSpan.className = "unit";
+      unitSpan.textContent = "x";
+      gainDisplay.appendChild(unitSpan);
       gainBar.style.width = gainToBarPercent(state.gain) + "%";
 
       waveformWrap.classList.toggle("paused", !!state.paused);
