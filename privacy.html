@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YT Levelr — Privacy Policy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0c0c0c;
+      --surface: #141414;
+      --border: #222;
+      --accent: #c8f060;
+      --accent-dim: #8aaa30;
+      --text: #d8d8d8;
+      --text-muted: #555;
+      --text-faint: #333;
+    }
+
+    html {
+      font-size: 15px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      min-height: 100vh;
+      padding: 0 0 80px;
+    }
+
+    /* ---- Header ---- */
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 28px 40px;
+      display: flex;
+      align-items: baseline;
+      gap: 20px;
+    }
+
+    .wordmark {
+      font-family: 'DM Mono', monospace;
+      font-size: 17px;
+      font-weight: 500;
+      color: var(--accent);
+      letter-spacing: -0.02em;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .wordmark span {
+      color: var(--text-muted);
+    }
+
+    .header-sep {
+      width: 1px;
+      height: 14px;
+      background: var(--border);
+      flex-shrink: 0;
+      align-self: center;
+    }
+
+    .header-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* ---- Layout ---- */
+
+    main {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 60px 40px 0;
+    }
+
+    /* ---- Title block ---- */
+
+    .title-block {
+      margin-bottom: 52px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      font-family: 'DM Mono', monospace;
+      font-size: 28px;
+      font-weight: 500;
+      color: var(--text);
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+
+    h1 em {
+      color: var(--accent);
+      font-style: normal;
+    }
+
+    .meta {
+      display: flex;
+      gap: 24px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+    }
+
+    .meta span::before {
+      content: '·';
+      margin-right: 8px;
+      color: var(--text-faint);
+    }
+
+    .meta span:first-child::before {
+      display: none;
+    }
+
+    /* ---- Summary box ---- */
+
+    .summary {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 4px;
+      padding: 20px 24px;
+      margin-bottom: 48px;
+      font-size: 0.93rem;
+      color: var(--text);
+    }
+
+    .summary-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent-dim);
+      margin-bottom: 10px;
+    }
+
+    /* ---- Sections ---- */
+
+    section {
+      margin-bottom: 40px;
+    }
+
+    h2 {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent-dim);
+      margin-bottom: 14px;
+    }
+
+    p {
+      font-size: 0.93rem;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+
+    .nil {
+      display: inline-block;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 2px 8px;
+      color: var(--accent);
+      letter-spacing: 0.06em;
+      vertical-align: middle;
+    }
+
+    /* ---- Divider ---- */
+
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 48px 0;
+    }
+
+    /* ---- Footer ---- */
+
+    footer {
+      max-width: 640px;
+      margin: 52px auto 0;
+      padding: 0 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    footer a {
+      color: var(--text-muted);
+      text-decoration: none;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    footer a:hover {
+      color: var(--accent);
+      border-color: var(--accent-dim);
+    }
+
+    @media (max-width: 520px) {
+      header { padding: 20px; }
+      main { padding: 40px 20px 0; }
+      footer { padding: 0 20px; flex-direction: column; gap: 8px; align-items: flex-start; }
+      h1 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <span class="wordmark">YT<span>/</span>Levelr</span>
+    <div class="header-sep"></div>
+    <span class="header-label">Privacy Policy</span>
+  </header>
+
+  <main>
+
+    <div class="title-block">
+      <h1>No data.<br><em>None at all.</em></h1>
+      <div class="meta">
+        <span>APMicro</span>
+        <span>Effective from first release</span>
+        <span>Plain English</span>
+      </div>
+    </div>
+
+    <div class="summary">
+      <div class="summary-label">Plain summary</div>
+      YT Levelr processes audio entirely within your browser. It does not collect, store, transmit, or share any data about you, your browsing, or what you listen to. Nothing leaves your machine.
+    </div>
+
+    <section>
+      <h2>What the extension does</h2>
+      <p>YT Levelr intercepts the audio output of YouTube videos in your browser and applies automatic gain correction to normalise loudness levels between videos. All processing happens locally using the Web Audio API.</p>
+    </section>
+
+    <section>
+      <h2>Data collected</h2>
+      <p><span class="nil">none</span></p>
+      <p>The extension does not collect any personal data, usage data, browsing history, or audio content. No analytics, crash reporting, or telemetry of any kind is included.</p>
+    </section>
+
+    <section>
+      <h2>Network requests</h2>
+      <p><span class="nil">none</span></p>
+      <p>The extension makes no network requests whatsoever. It does not contact any external server, API, or service. It has no backend.</p>
+    </section>
+
+    <section>
+      <h2>Local storage</h2>
+      <p>The extension stores two user preferences locally on your device using the browser's standard extension storage API: whether the extension is enabled, and your chosen target loudness level. These values never leave your browser and can be cleared by removing the extension.</p>
+    </section>
+
+    <section>
+      <h2>Permissions</h2>
+      <p>The extension requests two browser permissions. <strong>storage</strong> is used solely to remember your preferences between sessions. <strong>activeTab</strong> is used to interact with the YouTube tab's audio element. Neither permission is used for any data collection purpose.</p>
+    </section>
+
+    <section>
+      <h2>Third parties</h2>
+      <p><span class="nil">none</span></p>
+      <p>No third-party code, libraries, trackers, or services are included in or used by this extension.</p>
+    </section>
+
+    <hr>
+
+    <section>
+      <h2>Contact</h2>
+      <p>YT Levelr is developed by APMicro. Questions or concerns about this policy can be raised via the project's GitHub repository.</p>
+    </section>
+
+  </main>
+
+  <footer>
+    <span>© APMicro</span>
+    <a href="https://github.com/AndyP2/yt-levelr" target="_blank" rel="noopener">github.com/AndyP2/yt-levelr</a>
+  </footer>
+
+</body>
+</html>
