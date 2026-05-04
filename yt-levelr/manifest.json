@@ -3,6 +3,7 @@
   "name": "YT Levelr",
   "version": "1.0.0",
   "description": "Automatic loudness levelling for YouTube — useful for podcasts",
+  "homepage_url": "https://github.com/AndyP2/yt-levelr",
   "permissions": [
     "storage",
     "activeTab"
