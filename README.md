@@ -9,3 +9,7 @@ A firefox plugin to equalise the volume of youtube videos, especially podcasts, 
 - Gain transitions are faster for cuts than for boosts (asymmetric attack/release)
 - After 30s the gain locks; a slow drift correction every 3 minutes handles any remaining long-term level shift
 - Samples below the noise floor are ignored to avoid silence skewing the median
+
+## Limitations
+
+- Optimised for spoken word content such as podcasts; music videos with extended quiet intros may not be handled correctly.
