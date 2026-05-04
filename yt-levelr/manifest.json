@@ -4,6 +4,12 @@
   "version": "1.0.0",
   "description": "Automatic loudness levelling for YouTube — useful for podcasts",
   "homepage_url": "https://github.com/AndyP2/yt-levelr",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "yt-levelr@apmicro",
+      "strict_min_version": "109.0"
+    }
+  },
   "permissions": [
     "storage",
     "activeTab"
